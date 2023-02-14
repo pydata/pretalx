@@ -1,3 +1,5 @@
+import csv
+import io
 import json
 from functools import partial
 
@@ -330,6 +332,15 @@ class ReviewExportForm(ExportForm):
 
 
 class ReviewAssignImportForm(DirectionForm):
+    import_format = forms.ChoiceField(
+        required=True,
+        label=_("Import format"),
+        choices=(
+            ("csv", _("CSV import")),
+            ("json", _("JSON import")),
+        ),
+        widget=forms.RadioSelect,
+    )
     import_file = forms.FileField(label=_("File"))
     replace_assignments = forms.ChoiceField(
         label=_("Replace current assignments"),
@@ -368,10 +379,19 @@ class ReviewAssignImportForm(DirectionForm):
 
     def clean_import_file(self):
         uploaded_file = self.cleaned_data["import_file"]
-        try:
-            data = json.load(uploaded_file)
-        except Exception:
-            raise forms.ValidationError(_("Cannot parse JSON file."))
+        if self.cleaned_data["import_format"] == "json":
+            try:
+                data = json.load(uploaded_file)
+            except Exception:
+                raise forms.ValidationError(_("Cannot parse JSON file."))
+        else:
+            csvreader = csv.reader(io.StringIO(uploaded_file.read().decode("utf-8")))
+            data = {}
+            for row in csvreader:
+                # Skip header row if included.
+                if row[0] == "ID" or row[1] == "ID":
+                    continue
+                data[row[0]] = row[1].split(",")
         return data
 
     def clean(self):
