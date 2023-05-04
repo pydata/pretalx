@@ -190,6 +190,7 @@ def widget_data_v2(request, event, version=None):
         talks.select_related(
             "submission",
             "room",
+            "submission__submission_type",
             "submission__track",
             "submission__event",
         ).prefetch_related("submission__speakers")
@@ -219,6 +220,7 @@ def widget_data_v2(request, event, version=None):
                     ]
                     if talk.submission
                     else None,
+                    "submission_type_id": talk.submission.submission_type.id if talk.submission else None,
                     "track": talk.submission.track_id if talk.submission else None,
                     "start": talk.local_start,
                     "end": talk.local_end,
