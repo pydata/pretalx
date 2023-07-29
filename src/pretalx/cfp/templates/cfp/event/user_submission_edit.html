@@ -4,6 +4,7 @@
 {% load filesize %}
 {% load formset_tags %}
 {% load i18n %}
+{% load rich_text %}
 {% load rules %}
 {% load static %}
 
@@ -190,6 +191,35 @@
             </div>
         {% endif %}
     </form>
+    <h3 id="review-feedback">Review Feedback</h3>
+        <div class="table-responsive">
+            <table class="table review-table table-hover table-flip">
+                <tr>
+                    <th>{% translate "Score" %}</th>
+                    {% if score_categories|length > 1 %}
+                        {% for cat in score_categories %}
+                            <th>{{ cat.name }}</th>
+                        {% endfor %}
+                    {% endif %}
+                    {% for field in qform %}
+                        <th>{{ field.label }}</th>
+                    {% endfor %}
+                    <th>{% translate "Review" %}</th>
+                    <th></th>
+                </tr>
+                <tbody>
+                    {% for review in submission.reviews.all %}
+                        <tr>
+                            <td>{{ review.score }}</td>
+                            <td>{{ review.text|rich_text }}</td>
+                            <td>{{ review.user }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="100">{% translate "Nobody else has submitted a review yet." %}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     <h3 id="share-proposal">{% translate "Share proposal" %}</h3>
     <p>
         {% blocktranslate trimmed %}
